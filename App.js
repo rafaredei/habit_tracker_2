@@ -3,12 +3,11 @@ import {
   SafeAreaView,
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   Modal,
   StyleSheet,
-  Alert,
   TextInput,
+  Alert,
   Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -48,7 +47,18 @@ export default function App() {
   };
 
   const deleteHabit = (id) => {
-    setHabits(habits.filter((h) => h.id !== id));
+    Alert.alert(
+      "Delete Habit",
+      "Are you sure you want to delete this habit?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => setHabits(habits.filter((h) => h.id !== id)),
+        },
+      ]
+    );
   };
 
   const toggleHabit = (id) => {
@@ -59,34 +69,8 @@ export default function App() {
     );
   };
 
-  const renderItem = ({ item }) => {
-    const timeString = new Date(item.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-    return (
-      <TouchableOpacity
-        style={[
-          styles.habitTile,
-          { backgroundColor: item.completed ? "#4caf50" : "#4cafef" },
-        ]}
-        onPress={() => toggleHabit(item.id)}
-      >
-        <Text style={styles.habitText}>{item.name}</Text>
-        <Text style={styles.deadlineText}>Deadline: {timeString}</Text>
-
-        <View style={{ flexDirection: "row", position: "absolute", top: 10, right: 10 }}>
-          <TouchableOpacity style={styles.editButton} onPress={() => openModal(item)}>
-            <Text style={{ color: "#fff" }}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={() => deleteHabit(item.id)}>
-            <Text style={{ color: "#fff" }}>🗑</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const onTimeChange = (event, selectedTime) => {
-    setShowTimePicker(Platform.OS === "ios"); // iOS keeps picker open
+    setShowTimePicker(Platform.OS === "ios");
     if (selectedTime) setHabitTimeInput(selectedTime);
   };
 
@@ -94,12 +78,30 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Habit Tracker</Text>
 
-      <FlatList
-        data={habits}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
-      />
+      <View style={{ padding: 20 }}>
+        {habits.map((item) => {
+          const timeString = new Date(item.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.habitTile, { backgroundColor: item.completed ? "#4caf50" : "#2196f3" }]}
+              onPress={() => toggleHabit(item.id)}
+            >
+              <Text style={styles.habitText}>{item.name}</Text>
+              <Text style={styles.deadlineText}>Deadline: {timeString}</Text>
+
+              <View style={{ flexDirection: "row", position: "absolute", top: 10, right: 10 }}>
+                <TouchableOpacity style={styles.editButton} onPress={() => openModal(item)}>
+                  <Text style={{ color: "#fff" }}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteButton} onPress={() => deleteHabit(item.id)}>
+                  <Text style={{ color: "#fff" }}>🗑</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
         <Text style={styles.addButtonText}>+</Text>
@@ -121,6 +123,7 @@ export default function App() {
               placeholder="Habit name"
             />
 
+            <Text style={{ alignSelf: "flex-start", marginBottom: 5 }}>Deadline:</Text>
             <TouchableOpacity
               style={styles.timeButton}
               onPress={() => setShowTimePicker(true)}
@@ -162,19 +165,19 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: "bold", textAlign: "center", marginVertical: 15 },
   habitTile: {
     height: 100,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 16,
     marginBottom: 15,
-    padding: 10,
+    padding: 15,
+    justifyContent: "center",
+    position: "relative",
   },
   habitText: { fontSize: 20, color: "#fff", fontWeight: "600" },
-  deadlineText: { fontSize: 14, color: "#fff", marginTop: 4 },
+  deadlineText: { fontSize: 14, color: "#fff", marginTop: 5 },
   addButton: {
     position: "absolute",
     bottom: 30,
     right: 30,
-    backgroundColor: "#4cafef",
+    backgroundColor: "#2196f3",
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -184,14 +187,14 @@ const styles = StyleSheet.create({
   addButtonText: { fontSize: 32, color: "#fff", fontWeight: "bold" },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center", // center modal
+    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
     padding: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     width: "80%",
     alignItems: "center",
   },
@@ -217,7 +220,7 @@ const styles = StyleSheet.create({
   },
   timeText: { fontSize: 16 },
   modalButton: {
-    backgroundColor: "#4cafef",
+    backgroundColor: "#2196f3",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 8,
